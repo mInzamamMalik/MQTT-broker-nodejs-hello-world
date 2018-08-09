@@ -1,0 +1,47 @@
+var aedes = require('aedes')()
+var server = require('net').createServer(aedes.handle)
+var port = 1883
+
+server.listen(port, function () {
+    console.log('server listening on port', port)
+})
+
+aedes.on('clientError', function (client, err) {
+    console.log('client error', client.id, err.message, err.stack)
+})
+
+aedes.on('connectionError', function (client, err) {
+    console.log('connection error', client, err.message, err.stack)
+})
+
+aedes.on('publish', function (packet, client) { // when client publish something
+    if (client) {
+        console.log('publish: message from client', client.id, packet)
+    }
+})
+
+
+// publish a message on "iot" topic
+setInterval(() => {
+    aedes.publish({ topic: "iot", packet: "some text packet" }, () => {
+        console.log("published on 'iot' topic");
+    })
+}, 4000)
+
+aedes.on('subscribe', function (subscriptions, client) {
+    if (client) {
+        console.log('subscribe from client', subscriptions, client.id)
+    }
+})
+
+
+aedes.on('client', function (client) {
+    console.log('new client')
+    console.log('client.id: ', client.id)
+
+})
+
+
+
+
+
