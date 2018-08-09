@@ -1,9 +1,22 @@
-var aedes = require('aedes')()
+'use strict'
+
+var aedes = require('./aedes')()
 var server = require('net').createServer(aedes.handle)
-var port = 1883
+var httpServer = require('http').createServer()
+var ws = require('websocket-stream')
+var port = 8888
+var wsPort = process.env.PORT || 3000
 
 server.listen(port, function () {
     console.log('server listening on port', port)
+})
+
+ws.createServer({
+    server: httpServer
+}, aedes.handle)
+
+httpServer.listen(wsPort, function () {
+    console.log('websocket server listening on port', wsPort)
 })
 
 aedes.on('clientError', function (client, err) {
@@ -11,7 +24,7 @@ aedes.on('clientError', function (client, err) {
 })
 
 aedes.on('connectionError', function (client, err) {
-    console.log('connection error', client, err.message, err.stack)
+    console.log('client error', client, err.message, err.stack)
 })
 
 aedes.on('publish', function (packet, client) { // when client publish something
@@ -40,8 +53,3 @@ aedes.on('client', function (client) {
     console.log('client.id: ', client.id)
 
 })
-
-
-
-
-
